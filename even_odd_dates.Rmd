@@ -1,0 +1,164 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+```{r}
+library("tidyr")
+library(dplyr)
+library("ggplot2")
+```
+
+
+```{r}
+num_repeat <- 1
+
+dates <- data.frame(rep(
+  seq(as.Date('2022-01-01'), as.Date('2022-12-31'), by = 'days'), 
+  times = num_repeat))
+
+colnames(dates) <- c("date")
+
+dates$day <- format(as.Date(dates$date,format="%Y-%m-%d"), format = "%d")
+dates$day_name <- format(as.Date(dates$date,format="%Y-%m-%d"), format = "%A")
+dates$month_num <- format(as.Date(dates$date,format="%Y-%m-%d"), format = "%m")
+dates$month <- format(as.Date(dates$date,format="%Y-%m-%d"), format = "%B")
+
+dates$day<- sapply(dates$day, as.numeric)
+
+dates <- dates %>% filter(!day_name %in% c("Saturday", "Sunday"))
+
+dates <- dates %>% mutate(type = case_when(dates$day %% 2 == 1 ~ "Odd",
+                                           dates$day %% 2 == 0 ~ "Even",
+                                           ))
+
+dates
+```
+
+
+```{r}
+dates_agg <- dates %>% group_by(month_num,month, type) %>% summarise(date = n()) %>% rename(cnt = date)
+
+dates_agg
+```
+
+```{r}
+month_name <- c("January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December")
+
+g <- ggplot(data=dates_agg, aes(x=month_num, y=cnt, group=type)) +
+  geom_line(aes(color=type), alpha=.3)+
+  geom_point(aes(color=type) , size=7, alpha=.7) +
+  theme_classic() +
+  scale_color_manual(values=c("#C90C96", "#000060")) +
+  labs(x="", y="",
+      title = "Number of Days, Even and Odd",
+       subtitle = "Excluding weekends, 2022"
+       ) +
+  scale_x_discrete(labels=month_name) +
+  scale_y_continuous(limit = c(9, 13), breaks = c(10, 11, 12)) +
+  theme(axis.text.x  = element_text(angle=45, vjust=0.5, size=8), 
+        axis.ticks = element_blank(), 
+        line = element_blank(),
+        legend.title = element_blank(),
+        legend.background = element_blank(),
+        panel.background = element_rect(fill = "transparent", colour = NA),
+        plot.background = element_rect(fill=c("#dbc9a9")),
+        text = element_text(family = "Times New Roman")
+        )
+  # theme_void()
+
+ggsave(g, filename = "result/even_odd_2022.png", width=8, height=6)
+
+g
+
+```
+
+
+
+
+```{r}
+num_repeat <- 1
+
+dates <- data.frame(rep(
+  seq(as.Date('2020-01-01'), as.Date('2030-12-31'), by = 'days'), 
+  times = num_repeat))
+
+colnames(dates) <- c("date")
+
+dates$day <- format(as.Date(dates$date,format="%Y-%m-%d"), format = "%d")
+dates$day_name <- format(as.Date(dates$date,format="%Y-%m-%d"), format = "%A")
+dates$month_num <- format(as.Date(dates$date,format="%Y-%m-%d"), format = "%m")
+dates$month <- format(as.Date(dates$date,format="%Y-%m-%d"), format = "%B")
+dates$year <- format(as.Date(dates$date,format="%Y-%m-%d"), format = "%Y")
+
+dates$day<- sapply(dates$day, as.numeric)
+
+dates <- dates %>% filter(!day_name %in% c("Saturday", "Sunday"))
+
+dates <- dates %>% mutate(type = case_when(dates$day %% 2 == 1 ~ "Odd",
+                                           dates$day %% 2 == 0 ~ "Even",
+                                           ))
+
+dates
+```
+
+
+
+
+
+
+```{r}
+dates_agg <- dates %>% group_by(year, type) %>% summarise(date = n()) %>% rename(cnt = date)
+
+dates_agg
+```
+
+
+
+```{r}
+g <- ggplot(data=dates_agg, aes(x=year, y=cnt, group=type)) +
+  geom_line(aes(color=type), alpha=.3)+
+  geom_point(aes(color=type) , size=7, alpha=.7) +
+  theme_classic() +
+  scale_color_manual(values=c("#C90C96", "#000060")) +
+  labs(x="", y="", 
+       title = "Number of Days, Even and Odd",
+       subtitle = "Excluding weekends, 2022-2030"
+       ) +
+#   # scale_x_discrete(labels=month_name) +
+  scale_y_continuous(limit = c(124, 136), breaks = c(128, 133)) +
+  theme(axis.text.x  = element_text(angle=45, vjust=0.5, size=8),
+        axis.ticks = element_blank(),
+        line = element_blank(),
+        legend.title = element_blank(),
+        legend.background = element_blank(),
+        panel.background = element_rect(fill = "transparent", colour = NA),
+        plot.background = element_rect(fill=c("#dbc9a9")),
+        text = element_text(family = "Times New Roman")
+        )
+
+ggsave(g, filename = "result/even_odd_decade.png", width=8, height=6)
+
+g
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
